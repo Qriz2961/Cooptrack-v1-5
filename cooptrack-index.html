@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CoopTrack v1.5 - Transport Cooperative Management</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    /* Login Screen */
+    .login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .login-box {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .login-box h1 {
+      color: #1e3c72;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .login-box p {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #555;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #1e3c72;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 14px;
+      background: #1e3c72;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .btn-login:hover {
+      background: #2a5298;
+    }
+
+    .error-msg {
+      background: #fee;
+      color: #c33;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    /* Dashboard */
+    .dashboard {
+      display: none;
+      padding: 20px;
+    }
+
+    .header {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .header-left h1 {
+      color: #1e3c72;
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+
+    .header-left p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .user-info {
+      text-align: right;
+    }
+
+    .user-info .name {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .user-info .role {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .btn-logout {
+      padding: 10px 20px;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+
+    .btn-logout:hover {
+      background: #c0392b;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-left: 4px solid #1e3c72;
+    }
+
+    .stat-card h3 {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-card .value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1e3c72;
+      margin-bottom: 5px;
+    }
+
+    .stat-card .subtext {
+      font-size: 13px;
+      color: #999;
+    }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+      background: white;
+      padding: 0 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      gap: 5px;
+      overflow-x: auto;
+    }
+
+    .nav-tab {
+      padding: 18px 25px;
+      background: transparent;
+      border: none;
+      color: #666;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+
+    .nav-tab:hover {
+      color: #1e3c72;
+      background: #f8f9fa;
+    }
+
+    .nav-tab.active {
+      color: #1e3c72;
+      border-bottom-color: #1e3c72;
+    }
+
+    /* Content Container */
+    .content-container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      min-height: 400px;
+    }
+
+    .module-section {
+      display: none;
+    }
+
+    .module-section.active {
+      display: block;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .section-header h2 {
+      color: #1e3c72;
+      font-size: 22px;
+    }
+
+    .btn-primary {
+      padding: 12px 24px;
+      background: #1e3c72;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+
+    .btn-primary:hover {
+      background: #2a5298;
+    }
+
+    .btn-secondary {
+      padding: 12px 24px;
+      background: #95a5a6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-left: 10px;
+      transition: background 0.3s;
+    }
+
+    .btn-secondary:hover {
+      background: #7f8c8d;
+    }
+
+    /* Tables */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .data-table thead {
+      background: #f8f9fa;
+    }
+
+    .data-table th {
+      padding: 15px;
+      text-align: left;
+      font-weight: 600;
+      color: #555;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .data-table td {
+      padding: 15px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .data-table tbody tr:hover {
+      background: #f8f9fa;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-active {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status-inactive {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .status-valid {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status-expired {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .status-operational {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+
+    .status-maintenance {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .action-btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      margin-right: 5px;
+      transition: opacity 0.3s;
+    }
+
+    .action-btn:hover {
+      opacity: 0.8;
+    }
+
+    .btn-edit {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-delete {
+      background: #e74c3c;
+      color: white;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .modal-header h3 {
+      color: #1e3c72;
+      font-size: 20px;
+    }
+
+    .modal-footer {
+      margin-top: 25px;
+      padding-top: 15px;
+      border-top: 2px solid #f0f0f0;
+      text-align: right;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .form-row.full {
+      grid-template-columns: 1fr;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #1e3c72;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Compliance Progress */
+    .compliance-item {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .compliance-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .compliance-header h4 {
+      color: #333;
+      font-size: 15px;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #27ae60;
+      transition: width 0.3s;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+
+    .empty-state svg {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 20px;
+      opacity: 0.3;
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .nav-tabs {
+        padding: 0 10px;
+      }
+
+      .nav-tab {
+        padding: 15px 15px;
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Login Screen -->
+  <div id="loginScreen" class="login-container">
+    <div class="login-box">
+      <h1>CoopTrack</h1>
+      <p>Transport Cooperative Management System v1.5</p>
+      
+      <div id="loginError" class="error-msg"></div>
+      
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" required autocomplete="username">
+        </div>
+        
+        <div class="form-group">
+          <label for="pin">PIN</label>
+          <input type="password" id="pin" required autocomplete="current-password">
+        </div>
+        
+        <button type="submit" class="btn-login">Sign In</button>
+      </form>
+      
+      <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 13px; color: #999;">
+        <p><strong>Demo Credentials:</strong></p>
+        <p>Coop: <code>coop</code> / <code>coop1234</code></p>
+        <p>LTFRB: <code>ltfrb</code> / <code>ltfrb1234</code></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard" class="dashboard">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <h1>CoopTrack Dashboard</h1>
+        <p id="orgName">COLTRANSCO - Columbio Transport Service Cooperative</p>
+      </div>
+      <div class="header-right">
+        <div class="user-info">
+          <div class="name" id="userName"></div>
+          <div class="role" id="userRole"></div>
+        </div>
+        <button class="btn-logout" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <h3>Total Members</h3>
+        <div class="value" id="statMembers">-</div>
+        <div class="subtext"><span id="statActiveMembers">-</span> active</div>
+      </div>
+      <div class="stat-card">
+        <h3>Fleet Units</h3>
+        <div class="value" id="statFleet">-</div>
+        <div class="subtext"><span id="statOperational">-</span> operational</div>
+      </div>
+      <div class="stat-card">
+        <h3>Drivers</h3>
+        <div class="value" id="statDrivers">-</div>
+        <div class="subtext"><span id="statActiveDrivers">-</span> active</div>
+      </div>
+      <div class="stat-card">
+        <h3>Routes</h3>
+        <div class="value" id="statRoutes">-</div>
+        <div class="subtext">Active assignments</div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('members')">Members & Drivers</button>
+      <button class="nav-tab" onclick="switchTab('fleet')">Fleet Registry</button>
+      <button class="nav-tab" onclick="switchTab('routes')">Route Assignment</button>
+      <button class="nav-tab" onclick="switchTab('compliance')">Compliance Tracker</button>
+    </div>
+
+    <!-- Content Container -->
+    <div class="content-container">
+      <!-- Members Module -->
+      <div id="membersModule" class="module-section active">
+        <div class="section-header">
+          <h2>Members & Drivers</h2>
+          <div>
+            <button class="btn-primary" onclick="showAddMember()">+ Add Member</button>
+            <button class="btn-primary" onclick="showAddDriver()">+ Add Driver</button>
+          </div>
+        </div>
+
+        <h3 style="margin-bottom: 15px; color: #555;">Members</h3>
+        <div id="membersTableContainer"></div>
+
+        <h3 style="margin: 30px 0 15px; color: #555;">Drivers</h3>
+        <div id="driversTableContainer"></div>
+      </div>
+
+      <!-- Fleet Module -->
+      <div id="fleetModule" class="module-section">
+        <div class="section-header">
+          <h2>Fleet Registry</h2>
+          <button class="btn-primary" onclick="showAddFleet()">+ Add Unit</button>
+        </div>
+        <div id="fleetTableContainer"></div>
+      </div>
+
+      <!-- Routes Module -->
+      <div id="routesModule" class="module-section">
+        <div class="section-header">
+          <h2>Route Assignment</h2>
+          <button class="btn-primary" onclick="showAddRoute()">+ Assign Route</button>
+        </div>
+        <div id="routesTableContainer"></div>
+      </div>
+
+      <!-- Compliance Module -->
+      <div id="complianceModule" class="module-section">
+        <div class="section-header">
+          <h2>Compliance Tracker</h2>
+          <button class="btn-primary" onclick="updateComplianceData()">Refresh Data</button>
+        </div>
+        <div id="complianceContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Member Modal -->
+  <div id="memberModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="memberModalTitle">Add New Member</h3>
+      </div>
+      <form id="memberForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" id="memberName" required>
+          </div>
+          <div class="form-group">
+            <label>Member Type *</label>
+            <select id="memberType" class="form-group input" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px;">
+              <option value="OWNER">Owner</option>
+              <option value="DRIVER">Driver</option>
+              <option value="ASSOCIATE">Associate</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Status *</label>
+            <select id="memberStatus" class="form-group input" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px;">
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Date Joined *</label>
+            <input type="date" id="memberJoined" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Contact Number</label>
+            <input type="tel" id="memberContact">
+          </div>
+          <div class="form-group">
+            <label>Equity Contribution (₱)</label>
+            <input type="number" id="memberEquity" min="0" step="100">
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-group">
+            <label>Address</label>
+            <input type="text" id="memberAddress">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('memberModal')">Cancel</button>
+          <button type="submit" class="btn-primary">Save Member</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Driver Modal -->
+  <div id="driverModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add New Driver</h3>
+      </div>
+      <form id="driverForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" id="driverName" required>
+          </div>
+          <div class="form-group">
+            <label>License Number *</label>
+            <input type="text" id="driverLicense" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Status *</label>
+            <select id="driverStatus" class="form-group input" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px;">
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+              <option value="SUSPENDED">Suspended</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>License Expiry *</label>
+            <input type="date" id="driverExpiry" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Contact Number</label>
+            <input type="tel" id="driverContact">
+          </div>
+          <div class="form-group">
+            <label>Date Hired</label>
+            <input type="date" id="driverHired">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('driverModal')">Cancel</button>
+          <button type="submit" class="btn-primary">Save Driver</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Fleet Modal -->
+  <div id="fleetModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add Fleet Unit</h3>
+      </div>
+      <form id="fleetForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Plate Number *</label>
+            <input type="text" id="fleetPlate" required>
+          </div>
+          <div class="form-group">
+            <label>Body Number *</label>
+            <input type="text" id="fleetBody" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Make/Model *</label>
+            <input type="text" id="fleetModel" required>
+          </div>
+          <div class="form-group">
+            <label>Year Model *</label>
+            <input type="number" id="fleetYear" required min="1990" max="2026">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Denomination</label>
+            <input type="text" id="fleetDenom" placeholder="e.g., PUJ">
+          </div>
+          <div class="form-group">
+            <label>Status *</label>
+            <select id="fleetStatus" class="form-group input" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px;">
+              <option value="OPERATIONAL">Operational</option>
+              <option value="MAINTENANCE">Maintenance</option>
+              <option value="INACTIVE">Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Assigned Driver</label>
+            <input type="text" id="fleetDriver">
+          </div>
+          <div class="form-group">
+            <label>OR/CR Number</label>
+            <input type="text" id="fleetOrcr">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('fleetModal')">Cancel</button>
+          <button type="submit" class="btn-primary">Save Unit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Route Modal -->
+  <div id="routeModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Assign Route</h3>
+      </div>
+      <form id="routeForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Unit (Plate/Body) *</label>
+            <input type="text" id="routeUnit" required>
+          </div>
+          <div class="form-group">
+            <label>Driver Name *</label>
+            <input type="text" id="routeDriver" required>
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-group">
+            <label>Route *</label>
+            <input type="text" id="routePath" required placeholder="e.g., Koronadal - General Santos">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Shift *</label>
+            <select id="routeShift" class="form-group input" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px;">
+              <option value="MORNING">Morning (5AM-12NN)</option>
+              <option value="AFTERNOON">Afternoon (12NN-7PM)</option>
+              <option value="NIGHT">Night (7PM-5AM)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Effective Date *</label>
+            <input type="date" id="routeEffective" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('routeModal')">Cancel</button>
+          <button type="submit" class="btn-primary">Save Assignment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // API Configuration
+    const API_BASE = 'https://cooptrack-api.chris-capistrano.workers.dev'; // UPDATE THIS after Worker deployment
+    
+    let currentUser = null;
+    let currentTSEID = 'TSE00074'; // COLTRANSCO
+
+    // Auth Functions
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const pin = document.getElementById('pin').value;
+      
+      try {
+        const response = await fetch(`${API_BASE}/auth`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, pin })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          currentUser = data.user;
+          document.getElementById('loginScreen').style.display = 'none';
+          document.getElementById('dashboard').style.display = 'block';
+          document.getElementById('userName').textContent = currentUser.name;
+          document.getElementById('userRole').textContent = currentUser.role;
+          
+          // Load dashboard
+          loadDashboard();
+        } else {
+          showError(data.error || 'Invalid credentials');
+        }
+      } catch (error) {
+        showError('Connection error. Please try again.');
+        console.error('Login error:', error);
+      }
+    });
+
+    function logout() {
+      currentUser = null;
+      document.getElementById('dashboard').style.display = 'none';
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('username').value = '';
+      document.getElementById('pin').value = '';
+    }
+
+    function showError(msg) {
+      const errorDiv = document.getElementById('loginError');
+      errorDiv.textContent = msg;
+      errorDiv.style.display = 'block';
+      setTimeout(() => {
+        errorDiv.style.display = 'none';
+      }, 5000);
+    }
+
+    // Dashboard Functions
+    async function loadDashboard() {
+      await Promise.all([
+        loadDashboardStats(),
+        loadMembers(),
+        loadDrivers(),
+        loadFleet(),
+        loadRoutes(),
+        loadCompliance()
+      ]);
+    }
+
+    async function loadDashboardStats() {
+      try {
+        const response = await fetch(`${API_BASE}/dashboard-stats?tseid=${currentTSEID}`);
+        const stats = await response.json();
+        
+        document.getElementById('statMembers').textContent = stats.members.total;
+        document.getElementById('statActiveMembers').textContent = stats.members.active;
+        document.getElementById('statFleet').textContent = stats.fleet.total;
+        document.getElementById('statOperational').textContent = stats.fleet.operational;
+        document.getElementById('statDrivers').textContent = stats.drivers.total;
+        document.getElementById('statActiveDrivers').textContent = stats.drivers.active;
+        document.getElementById('statRoutes').textContent = 0; // Will be updated when routes load
+      } catch (error) {
+        console.error('Stats error:', error);
+      }
+    }
+
+    // Members Functions
+    async function loadMembers() {
+      try {
+        const response = await fetch(`${API_BASE}/members?tseid=${currentTSEID}`);
+        const members = await response.json();
+        
+        if (members.length === 0) {
+          document.getElementById('membersTableContainer').innerHTML = `
+            <div class="empty-state">
+              <p>No members registered yet.</p>
+            </div>
+          `;
+          return;
+        }
+        
+        const table = `
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Joined</th>
+                <th>Equity</th>
+                <th>Contact</th>
+                ${currentUser.role === 'COOP' ? '<th>Actions</th>' : ''}
+              </tr>
+            </thead>
+            <tbody>
+              ${members.map(m => `
+                <tr>
+                  <td>${m.id}</td>
+                  <td>${m.name}</td>
+                  <td>${m.type}</td>
+                  <td><span class="status-badge status-${m.status.toLowerCase()}">${m.status}</span></td>
+                  <td>${m.joined}</td>
+                  <td>₱${m.equity?.toLocaleString() || 0}</td>
+                  <td>${m.contact || '-'}</td>
+                  ${currentUser.role === 'COOP' ? `
+                    <td>
+                      <button class="action-btn btn-edit" onclick="editMember('${m.id}')">Edit</button>
+                      <button class="action-btn btn-delete" onclick="deleteMember('${m.id}')">Delete</button>
+                    </td>
+                  ` : ''}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+        
+        document.getElementById('membersTableContainer').innerHTML = table;
+      } catch (error) {
+        console.error('Members error:', error);
+      }
+    }
+
+    async function loadDrivers() {
+      try {
+        const response = await fetch(`${API_BASE}/drivers?tseid=${currentTSEID}`);
+        const drivers = await response.json();
+        
+        if (drivers.length === 0) {
+          document.getElementById('driversTableContainer').innerHTML = `
+            <div class="empty-state">
+              <p>No drivers registered yet.</p>
+            </div>
+          `;
+          return;
+        }
+        
+        const table = `
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>License #</th>
+                <th>Status</th>
+                <th>Expiry</th>
+                <th>Contact</th>
+                ${currentUser.role === 'COOP' ? '<th>Actions</th>' : ''}
+              </tr>
+            </thead>
+            <tbody>
+              ${drivers.map(d => `
+                <tr>
+                  <td>${d.id}</td>
+                  <td>${d.name}</td>
+                  <td>${d.license}</td>
+                  <td><span class="status-badge status-${d.status.toLowerCase()}">${d.status}</span></td>
+                  <td>${d.expiry}</td>
+                  <td>${d.contact || '-'}</td>
+                  ${currentUser.role === 'COOP' ? `
+                    <td>
+                      <button class="action-btn btn-edit">Edit</button>
+                      <button class="action-btn btn-delete">Delete</button>
+                    </td>
+                  ` : ''}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+        
+        document.getElementById('driversTableContainer').innerHTML = table;
+      } catch (error) {
+        console.error('Drivers error:', error);
+      }
+    }
+
+    // Fleet Functions
+    async function loadFleet() {
+      try {
+        const response = await fetch(`${API_BASE}/fleet?tseid=${currentTSEID}`);
+        const fleet = await response.json();
+        
+        if (fleet.length === 0) {
+          document.getElementById('fleetTableContainer').innerHTML = `
+            <div class="empty-state">
+              <p>No fleet units registered yet.</p>
+            </div>
+          `;
+          return;
+        }
+        
+        const table = `
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Plate #</th>
+                <th>Body #</th>
+                <th>Make/Model</th>
+                <th>Year</th>
+                <th>Status</th>
+                <th>Driver</th>
+                ${currentUser.role === 'COOP' ? '<th>Actions</th>' : ''}
+              </tr>
+            </thead>
+            <tbody>
+              ${fleet.map(u => `
+                <tr>
+                  <td>${u.plate}</td>
+                  <td>${u.body}</td>
+                  <td>${u.model}</td>
+                  <td>${u.year}</td>
+                  <td><span class="status-badge status-${u.status.toLowerCase()}">${u.status}</span></td>
+                  <td>${u.driver || '-'}</td>
+                  ${currentUser.role === 'COOP' ? `
+                    <td>
+                      <button class="action-btn btn-edit">Edit</button>
+                      <button class="action-btn btn-delete">Delete</button>
+                    </td>
+                  ` : ''}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+        
+        document.getElementById('fleetTableContainer').innerHTML = table;
+      } catch (error) {
+        console.error('Fleet error:', error);
+      }
+    }
+
+    // Routes Functions
+    async function loadRoutes() {
+      try {
+        const response = await fetch(`${API_BASE}/routes?tseid=${currentTSEID}`);
+        const routes = await response.json();
+        
+        document.getElementById('statRoutes').textContent = routes.length;
+        
+        if (routes.length === 0) {
+          document.getElementById('routesTableContainer').innerHTML = `
+            <div class="empty-state">
+              <p>No route assignments yet.</p>
+            </div>
+          `;
+          return;
+        }
+        
+        const table = `
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Unit</th>
+                <th>Driver</th>
+                <th>Route</th>
+                <th>Shift</th>
+                <th>Effective Date</th>
+                ${currentUser.role === 'COOP' ? '<th>Actions</th>' : ''}
+              </tr>
+            </thead>
+            <tbody>
+              ${routes.map(r => `
+                <tr>
+                  <td>${r.unit}</td>
+                  <td>${r.driver}</td>
+                  <td>${r.route}</td>
+                  <td>${r.shift}</td>
+                  <td>${r.effective}</td>
+                  ${currentUser.role === 'COOP' ? `
+                    <td>
+                      <button class="action-btn btn-edit">Edit</button>
+                      <button class="action-btn btn-delete">Delete</button>
+                    </td>
+                  ` : ''}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+        
+        document.getElementById('routesTableContainer').innerHTML = table;
+      } catch (error) {
+        console.error('Routes error:', error);
+      }
+    }
+
+    // Compliance Functions
+    async function loadCompliance() {
+      try {
+        const response = await fetch(`${API_BASE}/compliance?tseid=${currentTSEID}`);
+        const compliance = await response.json();
+        
+        const html = `
+          <div class="compliance-item">
+            <div class="compliance-header">
+              <h4>CPC Validity</h4>
+              <span class="status-badge status-${compliance.cpc?.status === 'Valid' ? 'valid' : 'expired'}">
+                ${compliance.cpc?.status || 'Unknown'}
+              </span>
+            </div>
+            <p><strong>Holder:</strong> ${compliance.cpc?.holder || '-'}</p>
+            <p><strong>Expiry:</strong> ${compliance.cpc?.expiry || '-'}</p>
+          </div>
+
+          <div class="compliance-item">
+            <div class="compliance-header">
+              <h4>Passenger Insurance</h4>
+              <span class="status-badge status-${compliance.insurance?.status === 'Valid' ? 'valid' : 'expired'}">
+                ${compliance.insurance?.status || 'Unknown'}
+              </span>
+            </div>
+            <p><strong>Provider:</strong> ${compliance.insurance?.provider || '-'}</p>
+            <p><strong>Expiry:</strong> ${compliance.insurance?.expiry || '-'}</p>
+          </div>
+
+          <div class="compliance-item">
+            <div class="compliance-header">
+              <h4>Electronic Case Certificates (eCC)</h4>
+            </div>
+            <p><strong>Total:</strong> ${compliance.ecc?.total || 0}</p>
+            <p><strong>Valid:</strong> ${compliance.ecc?.valid || 0}</p>
+            <p><strong>Expired:</strong> ${compliance.ecc?.expired || 0}</p>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${compliance.ecc?.total > 0 ? (compliance.ecc.valid / compliance.ecc.total * 100) : 0}%"></div>
+            </div>
+          </div>
+
+          <div class="compliance-item">
+            <div class="compliance-header">
+              <h4>Violations Record</h4>
+            </div>
+            <p><strong>Total Cases:</strong> ${compliance.violations?.count || 0}</p>
+            <p><strong>Resolved:</strong> ${compliance.violations?.resolved || 0}</p>
+            <p><strong>Pending:</strong> ${compliance.violations?.pending || 0}</p>
+          </div>
+        `;
+        
+        document.getElementById('complianceContainer').innerHTML = html;
+      } catch (error) {
+        console.error('Compliance error:', error);
+      }
+    }
+
+    async function updateComplianceData() {
+      await loadCompliance();
+      alert('Compliance data refreshed');
+    }
+
+    // Tab Switching
+    function switchTab(tab) {
+      // Update tab buttons
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      // Update modules
+      document.querySelectorAll('.module-section').forEach(m => m.classList.remove('active'));
+      document.getElementById(`${tab}Module`).classList.add('active');
+    }
+
+    // Modal Functions
+    function showAddMember() {
+      if (currentUser.role !== 'COOP') {
+        alert('Only cooperative staff can add members');
+        return;
+      }
+      document.getElementById('memberModalTitle').textContent = 'Add New Member';
+      document.getElementById('memberForm').reset();
+      document.getElementById('memberModal').classList.add('active');
+    }
+
+    function showAddDriver() {
+      if (currentUser.role !== 'COOP') {
+        alert('Only cooperative staff can add drivers');
+        return;
+      }
+      document.getElementById('driverForm').reset();
+      document.getElementById('driverModal').classList.add('active');
+    }
+
+    function showAddFleet() {
+      if (currentUser.role !== 'COOP') {
+        alert('Only cooperative staff can add fleet units');
+        return;
+      }
+      document.getElementById('fleetForm').reset();
+      document.getElementById('fleetModal').classList.add('active');
+    }
+
+    function showAddRoute() {
+      if (currentUser.role !== 'COOP') {
+        alert('Only cooperative staff can assign routes');
+        return;
+      }
+      document.getElementById('routeForm').reset();
+      document.getElementById('routeModal').classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    // Form Handlers
+    document.getElementById('memberForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const memberData = {
+        name: document.getElementById('memberName').value,
+        type: document.getElementById('memberType').value,
+        status: document.getElementById('memberStatus').value,
+        joined: document.getElementById('memberJoined').value,
+        contact: document.getElementById('memberContact').value,
+        equity: parseFloat(document.getElementById('memberEquity').value) || 0,
+        address: document.getElementById('memberAddress').value,
+        tseid: currentTSEID
+      };
+      
+      try {
+        const response = await fetch(`${API_BASE}/members`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(memberData)
+        });
+        
+        if (response.ok) {
+          closeModal('memberModal');
+          await loadMembers();
+          await loadDashboardStats();
+          alert('Member added successfully');
+        }
+      } catch (error) {
+        console.error('Add member error:', error);
+        alert('Failed to add member');
+      }
+    });
+
+    document.getElementById('driverForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const driverData = {
+        name: document.getElementById('driverName').value,
+        license: document.getElementById('driverLicense').value,
+        status: document.getElementById('driverStatus').value,
+        expiry: document.getElementById('driverExpiry').value,
+        contact: document.getElementById('driverContact').value,
+        hired: document.getElementById('driverHired').value,
+        tseid: currentTSEID
+      };
+      
+      try {
+        const response = await fetch(`${API_BASE}/drivers`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(driverData)
+        });
+        
+        if (response.ok) {
+          closeModal('driverModal');
+          await loadDrivers();
+          await loadDashboardStats();
+          alert('Driver added successfully');
+        }
+      } catch (error) {
+        console.error('Add driver error:', error);
+        alert('Failed to add driver');
+      }
+    });
+
+    document.getElementById('fleetForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const fleetData = {
+        plate: document.getElementById('fleetPlate').value,
+        body: document.getElementById('fleetBody').value,
+        model: document.getElementById('fleetModel').value,
+        year: document.getElementById('fleetYear').value,
+        denom: document.getElementById('fleetDenom').value,
+        status: document.getElementById('fleetStatus').value,
+        driver: document.getElementById('fleetDriver').value,
+        orcr: document.getElementById('fleetOrcr').value,
+        tseid: currentTSEID
+      };
+      
+      try {
+        const response = await fetch(`${API_BASE}/fleet`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(fleetData)
+        });
+        
+        if (response.ok) {
+          closeModal('fleetModal');
+          await loadFleet();
+          await loadDashboardStats();
+          alert('Fleet unit added successfully');
+        }
+      } catch (error) {
+        console.error('Add fleet error:', error);
+        alert('Failed to add fleet unit');
+      }
+    });
+
+    document.getElementById('routeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const routeData = {
+        unit: document.getElementById('routeUnit').value,
+        driver: document.getElementById('routeDriver').value,
+        route: document.getElementById('routePath').value,
+        shift: document.getElementById('routeShift').value,
+        effective: document.getElementById('routeEffective').value,
+        tseid: currentTSEID
+      };
+      
+      try {
+        const response = await fetch(`${API_BASE}/routes`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(routeData)
+        });
+        
+        if (response.ok) {
+          closeModal('routeModal');
+          await loadRoutes();
+          alert('Route assignment saved');
+        }
+      } catch (error) {
+        console.error('Add route error:', error);
+        alert('Failed to save route assignment');
+      }
+    });
+
+    async function deleteMember(memberId) {
+      if (!confirm('Delete this member? This action cannot be undone.')) return;
+      
+      try {
+        const response = await fetch(`${API_BASE}/members/${memberId}?tseid=${currentTSEID}`, {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          await loadMembers();
+          await loadDashboardStats();
+          alert('Member deleted');
+        }
+      } catch (error) {
+        console.error('Delete error:', error);
+        alert('Failed to delete member');
+      }
+    }
+
+    // Close modals on outside click
+    document.querySelectorAll('.modal').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.remove('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
